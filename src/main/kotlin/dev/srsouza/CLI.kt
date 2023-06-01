@@ -1,29 +1,16 @@
-package dev.devsrsouza
+package dev.srsouza
 
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.subcommands
-import dev.devsrsouza.collector.initCollector
-import dev.devsrsouza.functions.callStatus
-import dev.devsrsouza.functions.callStop
-import dev.devsrsouza.functions.callStart
-import io.ktor.server.application.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import dev.devsrsouza.plugins.*
-import io.ktor.server.resources.*
-
-fun startBackgroundClient() {
-    initCollector()
-    initHttpServer()
-}
+import com.github.ajalt.clikt.parameters.options.option
+import dev.srsouza.functions.callStart
+import dev.srsouza.functions.callStatus
+import dev.srsouza.functions.callStop
 
 class MainCommand : CliktCommand() {
     override fun run() = Unit
 }
 
 class StartCommand : CliktCommand(name = "start") {
-    // TODO: should have a option to specify how much top will be selected?
-
     override fun run() {
         callStart()
     }
@@ -57,11 +44,3 @@ class HttpClientCommand : CliktCommand(
         startBackgroundClient()
     }
 }
-
-fun main(args: Array<String>) = MainCommand().subcommands(
-    StartCommand(),
-    StopCommand(),
-    CsvCommand(),
-    StatusCommand(),
-    HttpClientCommand(),
-).main(args)

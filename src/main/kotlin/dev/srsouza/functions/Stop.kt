@@ -1,19 +1,16 @@
-package dev.devsrsouza.functions
+package dev.srsouza.functions
 
-import dev.devsrsouza.httpClient
-import dev.devsrsouza.serverReference
+import dev.srsouza.SQL
+import dev.srsouza.httpClient
+import dev.srsouza.serverReference
 import io.ktor.client.plugins.resources.*
-import io.ktor.client.request.*
-import io.ktor.client.request.post
 import io.ktor.client.statement.*
 import io.ktor.resources.*
 import io.ktor.server.application.*
-import io.ktor.server.resources.*
 import io.ktor.server.resources.post
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -37,5 +34,6 @@ fun callStop() = runBlocking {
 private fun stopServer() {
     GlobalScope.launch {
         serverReference!!.stop()
+        SQL.dataSource.close()
     }
 }

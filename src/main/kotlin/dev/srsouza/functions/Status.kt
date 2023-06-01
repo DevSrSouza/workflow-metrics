@@ -1,6 +1,6 @@
-package dev.devsrsouza.functions
+package dev.srsouza.functions
 
-import dev.devsrsouza.httpClient
+import dev.srsouza.httpClient
 import io.ktor.client.plugins.resources.*
 import io.ktor.client.statement.*
 import io.ktor.resources.*
@@ -8,7 +8,6 @@ import io.ktor.server.application.*
 import io.ktor.server.resources.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.routing.get
 import kotlinx.coroutines.runBlocking
 
 fun Routing.status() {

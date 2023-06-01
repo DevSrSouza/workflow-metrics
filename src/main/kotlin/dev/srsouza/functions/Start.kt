@@ -1,10 +1,11 @@
-package dev.devsrsouza.functions
+package dev.srsouza.functions
 
-import dev.devsrsouza.httpClient
+import dev.srsouza.httpClient
 import io.ktor.client.plugins.resources.*
 import io.ktor.client.statement.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.serialization.Serializable
 import java.io.File
 
 fun callStart() = runBlocking {
@@ -31,7 +32,7 @@ private fun initInBackground() {
     // TODO: make smaller Java max footprint?
     val command = listOf(
         "java",
-        "-Xmx100M",
+        "-Xmx50M",
         "-jar",
         currentJar.path,
         "initClient",
@@ -40,7 +41,6 @@ private fun initInBackground() {
     println("Start in background: ${command.joinToString(" ")}")
 
     val builder = ProcessBuilder(command)
-    builder.inheritIO()
-    builder.start().waitFor()
-    //System.exit(0);
+    builder.start()
+    System.exit(0)
 }
