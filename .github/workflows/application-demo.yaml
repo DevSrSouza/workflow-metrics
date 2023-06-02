@@ -38,6 +38,7 @@ jobs:
 
       - name: Build Voyager
         run: |
+          cd voyager
           ./gradlew -Pversion=1.0.0-SNAPSHOT publishToMavenLocal --stacktrace
 
       - name: Stop workflow metrics
