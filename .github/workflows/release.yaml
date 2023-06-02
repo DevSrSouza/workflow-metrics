@@ -1,7 +1,8 @@
 name: Release
 on:
-  release:
-    types: [prereleased, released]
+  push:
+    tags:
+      - '*'
 
 jobs:
 
@@ -31,7 +32,11 @@ jobs:
           echo "New version: ${NEW_VERSION}"
           ./gradlew -Pversion=${NEW_VERSION} buildFatJar --stacktrace
 
-      - name: Upload Release Asset
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ github.event.release.tag_name }} ./build/libs/*
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: /build/libs/workflow-metrics-all.jar
+          asset_name: workflow-metrics.jar
+          tag: ${{ github.ref }}
+          overwrite: true
