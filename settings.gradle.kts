@@ -1,1 +1,1 @@
-rootProject.name = "dev.devsrsouza.workflow-metrics"
+rootProject.name = "workflow-metrics"

@@ -1,0 +1,64 @@
+name: Application Demo
+on:
+  workflow_dispatch:
+
+jobs:
+
+  build_voyager:
+    name: Build Voyager with Workflow Metrics
+    runs-on: macOS-latest
+    timeout-minutes: 90
+    steps:
+
+      - name: Fetch Sources
+        uses: actions/checkout@v3
+
+      - name: Copy CI gradle.properties
+        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      - name: Build workflow metrics
+        run: |
+          ./gradlew buildFatJar
+
+      - name: Fetch Voyager Sources
+        uses: actions/checkout@v3
+        with:
+          repository: adrielcafe/voyager
+          path: voyager
+
+      - name: Start Workflow Metrics
+        run: |
+          java -jar build/libs/workflow-metrics-all.jar start
+
+      - name: Build Voyager
+        run: |
+          cd voyager
+          ./gradlew -Pversion=1.0.0-SNAPSHOT publishToMavenLocal --stacktrace
+
+      - name: Stop workflow metrics
+        if: success() || failure()
+        run: |
+          java -jar build/libs/workflow-metrics-all.jar stop
+
+      - name: Generating workflow metrics results
+        if: success() || failure()
+        run: |
+          java -jar build/libs/workflow-metrics-all.jar csv
+
+      - name: List workflow metrics result
+        if: success() || failure()
+        run: |
+          ls -la ~/.workflow-metrics
+
+      - name: Upload Workflow Metrics results
+        if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: workflow-metrics
+          path: ~/.workflow-metrics/**/*
