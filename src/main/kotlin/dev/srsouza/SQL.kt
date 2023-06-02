@@ -11,16 +11,19 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 
 val dataFolderPath = File(System.getProperty("user.home"), ".workflow-metrics")
+val cacheFolder = File(dataFolderPath, "cache")
 
 object SQL {
-    val dataSource by lazy {
+    fun clearCache() {
         if(dataFolderPath.exists().not()) {
             dataFolderPath.mkdirs()
         }
-        val cacheFolder = File(dataFolderPath, "cache")
+
         if(cacheFolder.exists()) cacheFolder.deleteRecursively()
         cacheFolder.mkdirs()
+    }
 
+    val dataSource by lazy {
         val h2File = File(cacheFolder, "sql.db")
 
         HikariDataSource(
@@ -36,6 +39,8 @@ object SQL {
     }
 
     fun initTables() {
+        clearCache()
+
         transaction(database) {
             SchemaUtils.create(
                 ProcessEntriesTable,

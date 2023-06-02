@@ -1,7 +1,7 @@
 package dev.srsouza
 
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.parameters.options.option
+import dev.srsouza.collector.generateUsageCsv
 import dev.srsouza.functions.callStart
 import dev.srsouza.functions.callStatus
 import dev.srsouza.functions.callStop
@@ -25,7 +25,7 @@ class StopCommand : CliktCommand(name = "stop") {
 
 class CsvCommand : CliktCommand(name = "csv") {
     override fun run() {
-        TODO("Should get the file and parse to Csv")
+        generateUsageCsv()
     }
 }
 
