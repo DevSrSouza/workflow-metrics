@@ -6,7 +6,7 @@ jobs:
 
   build_voyager:
     name: Build Voyager with Workflow Metrics
-    runs-on: macOS-latest
+    runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
 
