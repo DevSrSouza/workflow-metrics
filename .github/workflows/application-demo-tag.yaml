@@ -1,4 +1,4 @@
-name: Application Demo
+name: Application Demo Tag
 on:
   workflow_dispatch:
 
@@ -9,9 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
-
-      - name: Fetch Sources
+      - name: Fetch Voyager Sources
         uses: actions/checkout@v3
+        with:
+          repository: adrielcafe/voyager
 
       - name: Copy CI gradle.properties
         run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
@@ -22,19 +23,12 @@ jobs:
           java-version: 17
           distribution: 'temurin'
 
-      - name: Build workflow metrics
-        run: |
-          ./gradlew buildFatJar
-
-      - name: Fetch Voyager Sources
-        uses: actions/checkout@v3
-        with:
-          repository: adrielcafe/voyager
-          path: voyager
+      - name: Download Workflow Metrics
+        run: curl https://github.com/DevSrSouza/workflow-metrics/releases/download/0.1.0/workflow-metrics-all.jar --output workflow-metrics-all.jar
 
       - name: Start Workflow Metrics
         run: |
-          java -jar build/libs/workflow-metrics-all.jar start
+          java -jar workflow-metrics-all.jar start
 
       - name: Build Voyager
         run: |
@@ -44,12 +38,12 @@ jobs:
       - name: Stop workflow metrics
         if: success() || failure()
         run: |
-          java -jar build/libs/workflow-metrics-all.jar stop
+          java -jar workflow-metrics-all.jar stop
 
       - name: Generating workflow metrics results
         if: success() || failure()
         run: |
-          java -jar build/libs/workflow-metrics-all.jar csv
+          java -jar workflow-metrics-all.jar csv
 
       - name: List workflow metrics result
         if: success() || failure()
