@@ -25,6 +25,15 @@ import kotlin.time.Duration.Companion.seconds
 // OSHI limitations: https://github.com/oshi/oshi/issues/893
 
 val collectionDelay = 3.seconds
+val processTopCount = 7
+
+fun main() {
+    while (true) {
+        println("-----------------")
+        println(collectTopMemoryProcess().map { it.pid to ((it.memoryInKb / 1000).toString() + "Mb && ${it.cpuUsageInPercent}" ) }.joinToString("\n"))
+        Thread.sleep(3000)
+    }
+}
 
 fun startProcessCollector() {
     GlobalScope.launch {
@@ -49,10 +58,18 @@ fun generateUsageCsv() {
     if(cpuCsv.exists()) cpuCsv.delete()
     cpuCsv.createNewFile()
 
+    val pidTable = File(dataFolderPath, "pid-table.md")
+    if(pidTable.exists()) pidTable.delete()
+    pidTable.createNewFile()
+
     transaction {
         val processes = ProcessEntriesTable.selectAll().associate {
-            it[ProcessEntriesTable.id].value to it[ProcessEntriesTable.pid]
+            it[ProcessEntriesTable.id].value to (it[ProcessEntriesTable.pid] to it[ProcessEntriesTable.command])
         }.toSortedMap()
+
+        println("Generating pid-table.md")
+        pidTable.appendText("| Process ID | Command |\n| --- | --- |\n")
+        pidTable.appendText(processes.values.joinToString("\n") { "| ${it.first} | ${it.second} |" })
 
         val min = TelemetryInstantsTable.selectAll().orderBy(TelemetryInstantsTable.instant to SortOrder.ASC).limit(1)
             .first()[TelemetryInstantsTable.instant].epochSeconds
@@ -62,8 +79,8 @@ fun generateUsageCsv() {
 
         println("DURATION SECONDS - ${max - min} - MIN SECONDS: $min - MAX SECONDS: $max")
 
-        memoryCsv.appendText("Instant," + processes.values.joinToString(",") { "pid $it" } + "\n")
-        cpuCsv.appendText("Instant," + processes.values.joinToString(",") + "\n")
+        memoryCsv.appendText("Instant," + processes.values.map { it.first }.joinToString(",") { "pid $it" } + "\n")
+        cpuCsv.appendText("Instant," + processes.values.map { it.first }.joinToString(",") + "\n")
         TelemetryInstantsTable.selectAll().forEach { telemetry ->
             val instant = telemetry[TelemetryInstantsTable.instant]
             val instantInEchoSeconds = instant.epochSeconds - min
@@ -103,22 +120,23 @@ private fun collectCurrentSystemInfo(): CurrentSystemInfo {
     )
 }
 private fun collectTopMemoryProcess(): List<RunningProcess> {
-    val processes = JProcesses.getProcessList()
+    // TODO: maybe use TOP instead?
+
+    val systemInfo = SystemInfo()
+    val processes = systemInfo.operatingSystem.processes
 
     // physicalMemory in KB
     val sorted = processes.sortedByDescending {
-        it.physicalMemory.toLong()
+        it.residentSetSize
     }
-    val top10 = sorted.take(10)
-
-    println(top10.map { it.cpuUsage })
+    val top10 = sorted.take(processTopCount)
 
     return top10.map {
         RunningProcess(
-            pid = it.pid.toInt(),
-            memoryInKb = it.physicalMemory.toLong(),
-            command = it.command,
-            cpuUsageInPercent = it.cpuUsage.toDouble(),
+            pid = it.processID,
+            memoryInKb = it.residentSetSize / 1000,
+            command = it.commandLine,
+            cpuUsageInPercent = 0.0, // TODO
         )
     }
 }
