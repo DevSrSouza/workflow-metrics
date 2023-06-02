@@ -24,7 +24,8 @@ jobs:
           distribution: 'temurin'
 
       - name: Download Workflow Metrics
-        run: curl https://github.com/DevSrSouza/workflow-metrics/releases/download/0.1.0/workflow-metrics-all.jar --output workflow-metrics-all.jar
+        run: >
+          curl -H "Accept: application/zip" https://github.com/DevSrSouza/workflow-metrics/releases/download/0.1.0/workflow-metrics-all.jar -o workflow-metrics-all.jar
 
       - name: Start Workflow Metrics
         run: |
