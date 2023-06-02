@@ -5,6 +5,7 @@ package dev.srsouza.collector
 import dev.srsouza.SQL
 import dev.srsouza.SQL.database
 import dev.srsouza.dataFolderPath
+import dev.srsouza.mainScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -36,7 +37,7 @@ fun main() {
 }
 
 fun startProcessCollector() {
-    GlobalScope.launch {
+    mainScope.launch {
         while(true) {
             delay(collectionDelay)
             val currentSystemInfo = collectCurrentSystemInfo()
@@ -177,7 +178,7 @@ object ProcessInfoTable : IntIdTable("process_info") {
 }
 
 private fun insertProcessInfo(systemInfo: CurrentSystemInfo) {
-    GlobalScope.launch {
+    mainScope.launch {
         newSuspendedTransaction(db = database) {
             val telemetryInstant = TelemetryInstantsTable.insertAndGetId {
                 it[instant] = systemInfo.timeStamp

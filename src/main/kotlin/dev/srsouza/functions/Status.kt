@@ -20,9 +20,6 @@ fun Routing.status() {
 class StatusResource
 
 fun callStatus() = runBlocking {
-    val response = httpClient.get(StatusResource()).bodyAsText()
-
+    val response = httpClient.use { it.get(StatusResource()).bodyAsText() }
     println(response)
-
-    httpClient.close()
 }

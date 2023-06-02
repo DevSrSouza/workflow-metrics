@@ -5,10 +5,21 @@ import com.zaxxer.hikari.HikariDataSource
 import dev.srsouza.collector.ProcessEntriesTable
 import dev.srsouza.collector.ProcessInfoTable
 import dev.srsouza.collector.TelemetryInstantsTable
+import io.ktor.server.engine.*
+import kotlinx.coroutines.*
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.slf4j.LoggerFactory
 import java.io.File
+import java.util.logging.Logger
+
+val mainJob = SupervisorJob()
+val mainScope = CoroutineScope(
+    mainJob +
+            Dispatchers.IO +
+            DefaultUncaughtExceptionHandler { LoggerFactory.getLogger("Exception") })
 
 val dataFolderPath = File(System.getProperty("user.home"), ".workflow-metrics")
 val cacheFolder = File(dataFolderPath, "cache")
@@ -41,12 +52,14 @@ object SQL {
     fun initTables() {
         clearCache()
 
-        transaction(database) {
-            SchemaUtils.create(
-                ProcessEntriesTable,
-                TelemetryInstantsTable,
-                ProcessInfoTable,
-            )
+        runBlocking {
+            newSuspendedTransaction(mainJob, db = database) {
+                SchemaUtils.create(
+                    ProcessEntriesTable,
+                    TelemetryInstantsTable,
+                    ProcessInfoTable,
+                )
+            }
         }
     }
 }

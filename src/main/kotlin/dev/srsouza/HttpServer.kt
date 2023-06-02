@@ -12,6 +12,7 @@ val serviceUrl = "http://$host:$port"
 var serverReference: ApplicationEngine? = null
 
 fun initHttpServer() {
+    println("Initializing http server")
     serverReference = embeddedServer(
         Netty,
         port = port,
@@ -24,4 +25,11 @@ fun initHttpServer() {
 
 fun Application.module() {
     configureRouting()
+    install(ShutDownUrl.ApplicationCallPlugin) {
+        shutDownUrl = "/stop"
+        exitCodeSupplier = {
+            mainJob.cancel()
+            0
+        }
+    }
 }
